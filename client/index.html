@@ -1,0 +1,57 @@
+Skip to content
+Features Business Explore Pricing
+This repository
+Search
+Sign in or Sign up
+Watch 66  Star 1,396  Fork 226 sockjs/sockjs-node
+Code  Issues 25  Pull requests 6  Projects 0  Wiki  Pulse  Graphs
+Branch: master Find file Copy pathsockjs-node/examples/express-3.x/index.html
+d4385b5  on 22 Jul 2015
+@brycekahle brycekahle Fix #182 update sockjs-client version in docs and example to 1.0.1
+2 contributors @brycekahle @majek
+RawBlameHistory
+72 lines (64 sloc)  1.88 KB
+<!doctype html>
+<html><head>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+  <script src="http://cdn.jsdelivr.net/sockjs/1.0.1/sockjs.min.js"></script>
+  <style>
+    .box {
+      width: 300px;
+      float: left;
+      margin: 0 20px 0 20px;
+    }
+    .box div, .box input {
+      border: 1px solid;
+      -moz-border-radius: 4px;
+      border-radius: 4px;
+      width: 100%;
+      padding: 0px;
+      margin: 5px;
+    }
+    .box div {
+      border-color: grey;
+      height: 300px;
+      overflow: auto;
+    }
+    .box input {
+      height: 30px;
+    }
+    h1 {
+      margin-left: 30px;
+    }
+    body {
+      background-color: #F0F0F0;
+      font-family: "Arial";
+    }
+  </style>
+</head><body lang="en">
+<h1>SockJS Express example</h1>
+
+<div id="first" class="box">
+  <div></div>
+  <form><input autocomplete="off" value="Type here..."></input></form>
+</div>
+
+
+</body></html>
