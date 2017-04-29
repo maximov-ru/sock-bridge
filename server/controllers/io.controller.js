@@ -1,70 +1,83 @@
-/**
- * Created by omaximov on 16/06/16.
- *
- * This controller manage socket.io events.
- */
 'use strict';
 
-var Player = require('../models/player');
-var ApiManager = require('../services/api.manager');
-var async = require('async');
-
+var SessionManager = require('../services/session.manager');
 
 var events = {
 
-  requestStartGame: function (socket) {
-    console.log('start game');
-    Player.startTimer(socket.gameKey);
-  },
+    setSessionId: function (socket, sessionId) {
+        //console.log('getting sessionId', sessionId);
+        //socket.emitCommand('message','Hello new user with id '+sessionId);
+        socket.sessionId = sessionId;
+        SessionManager.socketConnected(socket);
+    },
 
-  setKey: function (socket, data) {
-    socket.gameKey = data.gameKey;
-    if(!socket.gameKey){
-      socket.gameKey = 'default';
-    }
-    Player.addPlayer(socket, socket.gameKey);
-  },
+    connected: function (socket) {
+        console.log('connected event');
+    },
 
-  /**
-   * Event will be handled if socket connection is closed
-   * @param socket
+    /**
+     * Event will be handled if socket connection is closed
+     * @param socket
      */
-  disconnect: function (socket) {
-    if(socket.gameKey) {
-      Player.deletePlayer(socket, socket.gameKey);
+    disconnect: function (socket) {
+        SessionManager.socketDisconnected(socket);
     }
-  }
 };
 
 /**
  * Class of socket.io controller
  */
 class IoController {
-  constructor(io) {
-    this.io = io;
-    io.on(
-      'connection',
-      socket => {
-        console.log('connected ');
-        this.connected(socket);
-      }
-    );
-    ApiManager.setIo(io);
-  }
-
-  /**
-   * subscribe to events that need handle
-   * @param socket
-     */
-  connected(socket) {
-    for (let eventName in events) {
-      socket.on(eventName, (function (eventName) {
-        return function (userdata) {
-          events[eventName](socket, userdata);
-        };
-      })(eventName));
+    constructor(sockjs_echo) {
+        this.io = sockjs_echo;
+        this.io.on(
+            'connection',
+            socket => {
+                //console.log('connected ', socket);
+                this.connected(socket);
+            }
+        );
+        //ApiManager.setIo(this.io);
     }
-  }
+
+    /**
+     * subscribe to events that need handle
+     * @param socket
+     */
+    connected(socket) {
+        (function (sockjs) {
+            sockjs.emitCommand = function (command, data) {
+                var cmd = JSON.stringify({
+                    command: command,
+                    data: data
+                });
+                sockjs.write(cmd);
+            }
+        })(socket);
+        //console.log(socket.emit.toString());
+        events.connected(socket);
+        socket.on('data', (data) => {
+            var cmd = null;
+            try {
+                cmd = JSON.parse(data);
+            } catch (e) {
+                console.log('parsing data error');
+                cmd = null;
+            }
+
+            if (cmd && cmd.command && (typeof cmd.command === 'string')) {
+                if (typeof events[cmd.command] === 'function' && cmd.command !== 'disconnect') {
+                    events[cmd.command](socket, cmd.data);
+                } else {
+                    //send command to external
+                    SessionManager.commandFromUserEmit(socket, cmd);
+                }
+            }
+        });
+        socket.on('close', () => {
+            events.disconnect(socket);
+        })
+    }
 }
 
 module.exports = IoController;
