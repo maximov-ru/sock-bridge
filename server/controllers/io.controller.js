@@ -5,7 +5,7 @@ var SessionManager = require('../services/session.manager');
 var events = {
 
     setSessionId: function (socket, sessionId) {
-        //console.log('getting sessionId', sessionId);
+        console.log('getting sessionId', sessionId);
         //socket.emitCommand('message','Hello new user with id '+sessionId);
         socket.sessionId = sessionId;
         SessionManager.socketConnected(socket);
@@ -77,6 +77,10 @@ class IoController {
         socket.on('close', () => {
             events.disconnect(socket);
         })
+    }
+
+    static emitForSessionId(sessionId, command, data, exclude){
+        SessionManager.emitForSessionId(sessionId, command, data, exclude);
     }
 }
 

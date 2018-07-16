@@ -5,6 +5,7 @@ var error = Error;
 var mainConfig = require('./main.config');
 var path = require('path');
 var fs = require('fs');
+var bodyParser = require('body-parser');
 
 //import port number from configuration file
 var port = mainConfig.webServer.port;
@@ -33,6 +34,8 @@ server.listen(port, mainConfig.webServer.ip,
     }
   });
 
+app.use(bodyParser.json());
+//app.use(bodyParser.urlencoded({ extended: true }));
 //import socket.io controller
 var IoController = require('./controllers/io.controller');
 //run socket io controller
@@ -45,6 +48,21 @@ var getIndexContent = function () {
 
 app.get('/images/*', function (req, res) {
   res.sendFile(path.resolve('client/images/' + req.params[0]));
+});
+
+app.post('/api/send_msg/', function (req, res) {
+  if (req && req.body && req.body.user_id) {
+    log(JSON.stringify(req.body));
+    var exclude = req.body.exclude || [];
+    IoController.emitForSessionId(req.body.user_id,req.body.command,JSON.stringify(req.body.data), exclude);
+      res.send('ok');
+  }else{
+      res.send('bsd format');
+  }
+    log(JSON.stringify(Object.keys(req)));
+    log(JSON.stringify(req.body));
+
+    //res.sendFile(path.resolve('client/images/' + req.params[0]));
 });
 
 if (mainConfig.webServer.isProdMode) {
