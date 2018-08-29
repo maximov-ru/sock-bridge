@@ -55,6 +55,13 @@ class SessionManager{
         var sessionId = socket.sessionId;
         var socketId = socket.id;
 
+        if (!sessionsMap[sessionId]) {
+            console.log('strange bus session '+sessionId+' not found in map');
+            sessionsMap[sessionId] = {
+                connectedCount: 1,
+                socketsMap: {}
+            };
+        }
         sessionsMap[sessionId].connectedCount--;
 
         delete socketsMap[socketId];
